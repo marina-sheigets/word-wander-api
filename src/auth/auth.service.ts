@@ -1,6 +1,7 @@
 import {
     BadRequestException,
     Injectable,
+    NotFoundException,
     UnauthorizedException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
@@ -11,6 +12,7 @@ import { JwtService } from "@nestjs/jwt";
 import { RefreshToken } from "./schemas/refresh-token.schema";
 import { v4 as uuidv4 } from "uuid";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 
 @Injectable()
 export class AuthService {
@@ -113,4 +115,22 @@ export class AuthService {
         return await this.generateUserTokens(refreshToken.user);
     }
 
+    async changePassword(req, { newPassword, oldPassword }: ChangePasswordDto) {
+        const user = await this.UserModel.findById(req.user.userId);
+
+        if (!user) {
+            throw new NotFoundException("User not found");
+        }
+
+        const arePasswordsEqual = this.comparePasswords(oldPassword, user.password);
+
+        if (!arePasswordsEqual) {
+            throw new UnauthorizedException("Wrong credentials");
+        }
+
+        const newHashedPassword = this.hashPassword(newPassword);
+
+        user.password = newHashedPassword;
+        await user.save();
+    }
 }
