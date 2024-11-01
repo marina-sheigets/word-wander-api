@@ -4,13 +4,23 @@ import {
     UnauthorizedException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import mongoose, { Model } from "mongoose";
 import { User } from "./schemas/user.schema";
 import * as bcrypt from "bcrypt";
+import { JwtService } from "@nestjs/jwt";
+import { RefreshToken } from "./schemas/refresh-token.schema";
+import { v4 as uuidv4 } from "uuid";
+import { RefreshTokenDto } from "./dto/refresh-token.dto";
 
 @Injectable()
 export class AuthService {
-    constructor(@InjectModel("User") private UserModel: Model<User>) { }
+    readonly REFRESH_TOKEN_EXPIRATION_TIME = 60; // 60 days
+
+    constructor(
+        private jwt: JwtService,
+        @InjectModel(RefreshToken.name) private RefreshTokenModel: Model<RefreshToken>,
+        @InjectModel(User.name) private UserModel: Model<User>
+    ) { }
 
     async signUp(signupData: any) {
         const foundedUser = await this.findUserByEmail(signupData.email);
@@ -59,10 +69,47 @@ export class AuthService {
             throw new UnauthorizedException("Wrong credentials");
         }
 
-        return foundedUser;
+        return await this.generateUserTokens(foundedUser._id as mongoose.Types.ObjectId);
     }
 
     private comparePasswords(password: string, hashedPassword: string) {
         return bcrypt.compareSync(password, hashedPassword);
     }
+
+    private async generateUserTokens(userId: mongoose.Types.ObjectId) {
+        const accessToken = this.jwt.sign({ userId }, { expiresIn: '15m' }); // secret key was set in app.module.ts
+        const refreshToken = uuidv4();
+
+        await this.storeRefreshToken(userId, refreshToken);
+        return { accessToken, refreshToken };
+    }
+
+    async storeRefreshToken(userId: mongoose.Types.ObjectId, refreshToken: string) {
+        const expiresIn = new Date();
+        expiresIn.setDate(expiresIn.getDate() + this.REFRESH_TOKEN_EXPIRATION_TIME);
+
+        const createdRefreshToken = await this.RefreshTokenModel.create({
+            token: refreshToken,
+            user: userId,
+            expiresIn,
+        });
+
+        return createdRefreshToken.save();
+    }
+
+    async refreshToken({ token }: RefreshTokenDto) {
+        const refreshToken = await this.RefreshTokenModel.findOne({
+            token
+        });
+
+        if (!refreshToken || refreshToken.expiresIn < new Date()) {
+            throw new UnauthorizedException();
+        }
+
+        // we should delete the old refresh token and generate a new one
+        await this.RefreshTokenModel.deleteOne({ _id: refreshToken._id });
+
+        return await this.generateUserTokens(refreshToken.user);
+    }
+
 }
