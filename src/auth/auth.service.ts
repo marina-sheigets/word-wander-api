@@ -81,6 +81,7 @@ export class AuthService {
         const refreshToken = uuidv4();
 
         await this.storeRefreshToken(userId, refreshToken);
+
         return { accessToken, refreshToken };
     }
 
@@ -88,13 +89,13 @@ export class AuthService {
         const expiresIn = new Date();
         expiresIn.setDate(expiresIn.getDate() + this.REFRESH_TOKEN_EXPIRATION_TIME);
 
-        const createdRefreshToken = await this.RefreshTokenModel.create({
-            token: refreshToken,
-            user: userId,
-            expiresIn,
-        });
+        // unsure that the user has only one refresh token
+        await this.RefreshTokenModel.updateOne(
+            { user: userId },
+            { $set: { token: refreshToken, expiresIn } },
+            { upsert: true }
+        );
 
-        return createdRefreshToken.save();
     }
 
     async refreshToken({ token }: RefreshTokenDto) {
