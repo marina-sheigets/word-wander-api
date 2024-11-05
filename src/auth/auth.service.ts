@@ -13,6 +13,10 @@ import { RefreshToken } from "./schemas/refresh-token.schema";
 import { v4 as uuidv4 } from "uuid";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { ForgotPasswordDto } from "./dto/forgot-password.dto";
+import { nanoid } from "nanoid";
+import { ResetToken } from "./schemas/reset-tokens.schema";
+import { MailService } from "src/services/mail.service";
 
 @Injectable()
 export class AuthService {
@@ -20,8 +24,10 @@ export class AuthService {
 
     constructor(
         private jwt: JwtService,
+        private mailService: MailService,
         @InjectModel(RefreshToken.name) private RefreshTokenModel: Model<RefreshToken>,
-        @InjectModel(User.name) private UserModel: Model<User>
+        @InjectModel(User.name) private UserModel: Model<User>,
+        @InjectModel(ResetToken.name) private ResetTokenModel: Model<ResetToken>
     ) { }
 
     async signUp(signupData: any) {
@@ -132,5 +138,26 @@ export class AuthService {
 
         user.password = newHashedPassword;
         await user.save();
+    }
+
+    async forgotPassword({ email }: ForgotPasswordDto) {
+        const user = await this.findUserByEmail(email);
+
+        // no need to show the user that the email is not found because of security reasons
+
+        if (user) {
+            const expiresIn = new Date();
+            expiresIn.setHours(expiresIn.getHours() + 1);
+
+            const resetToken = nanoid(64);
+            await this.ResetTokenModel.create({
+                token: resetToken,
+                user: user._id,
+                expiresIn
+            });
+
+            this.mailService.sendPasswordResetEmail(email, resetToken);
+        }
+
     }
 }
