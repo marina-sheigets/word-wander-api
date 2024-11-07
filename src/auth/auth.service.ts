@@ -1,6 +1,7 @@
 import {
     BadRequestException,
     Injectable,
+    Logger,
     NotFoundException,
     UnauthorizedException,
 } from "@nestjs/common";
@@ -39,9 +40,12 @@ export class AuthService {
 
         const hashedPassword = this.hashPassword(signupData.password);
 
-        const createdUser = this.createUser(signupData.email, hashedPassword);
+        const createdUser = await this.createUser(signupData.email, hashedPassword);
 
-        return createdUser;
+        return {
+            email: createdUser.email,
+            ... await this.generateUserTokens(createdUser._id as mongoose.Types.ObjectId)
+        };
     }
 
     private async findUserByEmail(email: string) {
@@ -150,14 +154,49 @@ export class AuthService {
             expiresIn.setHours(expiresIn.getHours() + 1);
 
             const resetToken = nanoid(64);
-            await this.ResetTokenModel.create({
+
+            const createdToken = await this.ResetTokenModel.create({
                 token: resetToken,
                 user: user._id,
                 expiresIn
             });
 
-            this.mailService.sendPasswordResetEmail(email, resetToken);
+            await createdToken.save();
+
+            try {
+                await this.mailService.sendPasswordResetEmail(email, resetToken);
+            } catch (e) {
+                Logger.error(e);
+            }
         }
 
+        return { message: "If the email exists, the reset link has been sent" };
+    }
+
+    async resetPassword({ newPassword, resetToken }: any) {
+        const foundedToken = await this.findResetToken(resetToken);
+
+        if (!foundedToken) {
+            throw new UnauthorizedException("Invalid link");
+        }
+
+        const user = await this.UserModel.findById(foundedToken.user);
+
+        if (!user) {
+            throw new NotFoundException("User not found");
+        }
+
+        const newHashedPassword = this.hashPassword(newPassword);
+        user.password = newHashedPassword;
+        await user.save();
+
+        return { message: "Password has been changed" };
+    }
+
+    async findResetToken(token: string) {
+        return this.ResetTokenModel.findOne({
+            token,
+            expiresIn: { $gte: new Date() }
+        });
     }
 }

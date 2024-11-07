@@ -8,11 +8,13 @@ export class MailService {
     constructor() {
 
         this.transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
+            service: 'Gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
             auth: {
-                user: 'richmond.mante92@ethereal.email',
-                pass: 'G1Upc74XxxA7p86eNb'
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_PASSWORD
             }
         });
     }
@@ -27,6 +29,6 @@ export class MailService {
             text: `Click on the link to reset your password: ${resetLink}`,
         }
 
-        return this.transporter.sendMail(mailOptions);
+        return await this.transporter.sendMail(mailOptions);
     }
 }
