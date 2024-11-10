@@ -155,13 +155,11 @@ export class AuthService {
 
             const resetToken = nanoid(64);
 
-            const createdToken = await this.ResetTokenModel.create({
-                token: resetToken,
-                user: user._id,
-                expiresIn
-            });
-
-            await createdToken.save();
+            await this.ResetTokenModel.updateOne(
+                { user: user._id },
+                { $set: { token: resetToken, expiresIn } },
+                { upsert: true }
+            );
 
             try {
                 await this.mailService.sendPasswordResetEmail(email, resetToken);
