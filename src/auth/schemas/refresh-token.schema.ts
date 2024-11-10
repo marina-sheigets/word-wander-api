@@ -9,7 +9,7 @@ export class RefreshToken extends Document {
     @Prop({ required: true, type: mongoose.Types.ObjectId, ref: 'User' })
     user: mongoose.Types.ObjectId;
 
-    @Prop({ required: true })
+    @Prop({ required: true, index: { expires: 0 } })
     expiresIn: Date;
 }
 

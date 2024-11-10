@@ -150,8 +150,7 @@ export class AuthService {
         // no need to show the user that the email is not found because of security reasons
 
         if (user) {
-            const expiresIn = new Date();
-            expiresIn.setHours(expiresIn.getHours() + 1);
+            const expiresIn = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
 
             const resetToken = nanoid(64);
 
