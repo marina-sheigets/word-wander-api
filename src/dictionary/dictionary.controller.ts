@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { DictionaryService } from './dictionary.service';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { AddWordDto } from './dto/add-word.dto';
@@ -14,5 +14,11 @@ export class DictionaryController {
     @Req() request
   ) {
     return this.dictionaryService.addWord(request, addWordData);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('get-words')
+  async getWords(@Req() request) {
+    return this.dictionaryService.getWords(request);
   }
 }

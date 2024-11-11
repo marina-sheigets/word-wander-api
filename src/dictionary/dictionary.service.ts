@@ -17,4 +17,8 @@ export class DictionaryService {
             { upsert: true }
         );
     }
+
+    public async getWords(request) {
+        return this.DictionaryModel.find({ user: request.user.userId });
+    }
 }
