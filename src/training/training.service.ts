@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Training } from './schemas/training.schema';
 import { Dictionary } from 'src/dictionary/schemas/dictionary.schema';
+import { TrainingName } from 'src/constants/TrainingName';
 
 @Injectable()
 export class TrainingService {
@@ -45,6 +46,14 @@ export class TrainingService {
 
         training.wordsIds = await this.DictionaryModel.find({ _id: { $in: uniqueWordIds } });
         await training.save();
+
+        return training;
+    }
+
+    async getWords(request, trainingName: TrainingName) {
+        const userId = request.user.userId;
+
+        const training = await this.TrainingModel.find({ name: trainingName, user: userId });
 
         return training;
     }
