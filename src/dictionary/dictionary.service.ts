@@ -13,8 +13,8 @@ export class DictionaryService {
 
     public async addWord(request, { translation, word }: AddWordDto) {
         await this.DictionaryModel.updateOne(
-            { user: request.user.userId },
-            { $set: { word, translation } },
+            { user: request.user.userId, word },
+            { $set: { translation } },
             { upsert: true }
         );
     }
