@@ -38,13 +38,14 @@ export class AuthService {
             throw new BadRequestException("User already exists");
         }
 
+        const registrationDate = new Date();
         const hashedPassword = this.hashPassword(signupData.password);
 
-        const createdUser = await this.createUser(signupData.email, hashedPassword);
+        const createdUser = await this.createUser(signupData.email, hashedPassword, registrationDate);
 
         return {
             email: createdUser.email,
-            ... await this.generateUserTokens(createdUser._id as mongoose.Types.ObjectId)
+            ... await this.generateUserTokens(createdUser)
         };
     }
 
@@ -56,10 +57,11 @@ export class AuthService {
         return bcrypt.hashSync(password, 10);
     }
 
-    private async createUser(email: string, password: string) {
+    private async createUser(email: string, password: string, registrationDate: Date) {
         const user = await this.UserModel.create({
             email,
             password,
+            registrationDate
         });
 
         return user.save();
@@ -81,18 +83,26 @@ export class AuthService {
             throw new UnauthorizedException("Wrong credentials");
         }
 
-        return await this.generateUserTokens(foundedUser._id as mongoose.Types.ObjectId);
+        return await this.generateUserTokens(foundedUser);
     }
 
     private comparePasswords(password: string, hashedPassword: string) {
         return bcrypt.compareSync(password, hashedPassword);
     }
 
-    private async generateUserTokens(userId: mongoose.Types.ObjectId) {
-        const accessToken = this.jwt.sign({ userId }, { expiresIn: '15m' }); // secret key was set in app.module.ts
+    private async generateUserTokens(user: User) {
+        const accessToken = this.jwt.sign(
+            {
+                userId: user._id,
+                email: user.email,
+                registrationDate: user.registrationDate
+
+            },
+            { expiresIn: '15m' }); // secret key was set in app.module.ts
+
         const refreshToken = uuidv4();
 
-        await this.storeRefreshToken(userId, refreshToken);
+        await this.storeRefreshToken(user._id as mongoose.Types.ObjectId, refreshToken);
 
         return { accessToken, refreshToken };
     }
@@ -122,7 +132,9 @@ export class AuthService {
         // we should delete the old refresh token and generate a new one
         await this.RefreshTokenModel.deleteOne({ _id: refreshToken._id });
 
-        return await this.generateUserTokens(refreshToken.user);
+        const user = await this.UserModel.findById(refreshToken.user);
+
+        return await this.generateUserTokens(user);
     }
 
     async changePassword(req, { newPassword, oldPassword }: ChangePasswordDto) {
