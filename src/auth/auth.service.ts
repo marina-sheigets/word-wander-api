@@ -43,10 +43,7 @@ export class AuthService {
 
         const createdUser = await this.createUser(signupData.email, hashedPassword, registrationDate);
 
-        return {
-            email: createdUser.email,
-            ... await this.generateUserTokens(createdUser)
-        };
+        return await this.generateUserTokens(createdUser)
     }
 
     private async findUserByEmail(email: string) {
@@ -96,7 +93,6 @@ export class AuthService {
                 userId: user._id,
                 email: user.email,
                 registrationDate: user.registrationDate
-
             },
             { expiresIn: '15m' }); // secret key was set in app.module.ts
 
