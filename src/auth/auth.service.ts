@@ -143,7 +143,7 @@ export class AuthService {
         const arePasswordsEqual = this.comparePasswords(oldPassword, user.password);
 
         if (!arePasswordsEqual) {
-            throw new UnauthorizedException("Wrong credentials");
+            throw new BadRequestException("Wrong credentials");
         }
 
         const newHashedPassword = this.hashPassword(newPassword);
