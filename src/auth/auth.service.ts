@@ -18,6 +18,8 @@ import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { nanoid } from "nanoid";
 import { ResetToken } from "./schemas/reset-tokens.schema";
 import { MailService } from "src/services/mail.service";
+import { Dictionary } from "src/dictionary/schemas/dictionary.schema";
+import { Training } from "src/training/schemas/training.schema";
 
 @Injectable()
 export class AuthService {
@@ -28,7 +30,9 @@ export class AuthService {
         private mailService: MailService,
         @InjectModel(RefreshToken.name) private RefreshTokenModel: Model<RefreshToken>,
         @InjectModel(User.name) private UserModel: Model<User>,
-        @InjectModel(ResetToken.name) private ResetTokenModel: Model<ResetToken>
+        @InjectModel(ResetToken.name) private ResetTokenModel: Model<ResetToken>,
+        @InjectModel(Dictionary.name) private DictionaryModel: Model<Dictionary>,
+        @InjectModel(Training.name) private TrainingModel: Model<Training>,
     ) { }
 
     async signUp(signupData: any) {
@@ -209,5 +213,30 @@ export class AuthService {
         const { ObjectId } = mongoose.Types;
         const userId = new ObjectId(req.user.userId);
         return await this.RefreshTokenModel.deleteOne({ user: userId });
+    }
+
+    async deleteAccount(req): Promise<void> {
+        const session = await this.UserModel.db.startSession();
+        session.startTransaction();
+
+        const userId = new mongoose.Types.ObjectId(req.user.userId);
+
+        try {
+
+            await this.RefreshTokenModel.deleteMany({ user: userId }).session(session);
+            await this.ResetTokenModel.deleteMany({ user: userId }).session(session);
+            await this.DictionaryModel.deleteMany({ user: userId }).session(session);
+            await this.TrainingModel.deleteMany({ user: userId }).session(session);
+
+
+            await this.UserModel.deleteOne({ _id: userId }).session(session);
+
+            await session.commitTransaction();
+        } catch (error) {
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            session.endSession();
+        }
     }
 }
