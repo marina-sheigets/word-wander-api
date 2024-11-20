@@ -55,4 +55,10 @@ export class AuthController {
     ) {
         return this.authService.resetPassword(resetPasswordData);
     }
+
+    @UseGuards(AuthGuard)
+    @Post('logout')
+    async logout(@Req() request) {
+        return this.authService.logout(request);
+    }
 }

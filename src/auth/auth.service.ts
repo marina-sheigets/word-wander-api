@@ -204,4 +204,8 @@ export class AuthService {
             expiresIn: { $gte: new Date() }
         });
     }
+
+    async logout(req) {
+        return await this.RefreshTokenModel.deleteOne({ user: req.user.userId });
+    }
 }
