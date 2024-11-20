@@ -206,6 +206,8 @@ export class AuthService {
     }
 
     async logout(req) {
-        return await this.RefreshTokenModel.deleteOne({ user: req.user.userId });
+        const { ObjectId } = mongoose.Types;
+        const userId = new ObjectId(req.user.userId);
+        return await this.RefreshTokenModel.deleteOne({ user: userId });
     }
 }
