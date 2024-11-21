@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Dictionary } from './schemas/dictionary.schema';
 import { Model } from 'mongoose';
 import { AddWordDto } from './dto/add-word.dto';
-import { DeleteWordDto } from './dto/delete-word.dto';
 
 @Injectable()
 export class DictionaryService {
@@ -23,7 +22,8 @@ export class DictionaryService {
         return this.DictionaryModel.find({ user: request.user.userId });
     }
 
-    public deleteWord(request, { wordId }: DeleteWordDto) {
+    public deleteWord(request) {
+        const { wordId } = request.query;
         return this.DictionaryModel.deleteOne({ _id: wordId, user: request.user.userId });
     }
 }
