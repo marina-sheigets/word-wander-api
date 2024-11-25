@@ -72,7 +72,7 @@ export class AuthService {
         const foundedUser = await this.findUserByEmail(loginData.email);
 
         if (!foundedUser) {
-            throw new UnauthorizedException("Wrong credentials");
+            throw new BadRequestException("Wrong credentials");
         }
 
         const isPasswordValid = this.comparePasswords(
@@ -81,7 +81,7 @@ export class AuthService {
         );
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException("Wrong credentials");
+            throw new BadRequestException("Wrong credentials");
         }
 
         return await this.generateUserTokens(foundedUser);
