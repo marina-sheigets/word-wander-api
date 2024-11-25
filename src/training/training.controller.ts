@@ -27,4 +27,12 @@ export class TrainingController {
   ) {
     return this.trainingService.getWords(request, trainingName);
   }
+
+  @UseGuards(AuthGuard)
+  @Get("get-amount-words-for-trainings")
+  async getAmountWordsForTrainings(
+    @Req() request: Request
+  ) {
+    return this.trainingService.getAmountWordsForTrainings(request);
+  }
 }

@@ -57,4 +57,21 @@ export class TrainingService {
 
         return training;
     }
+
+    async getAmountWordsForTrainings(req) {
+        const userId = req.user.userId;
+        const trainingNames = Object.values(TrainingName);
+        const result = await this.TrainingModel.find({ user: userId });
+
+        const resultWithMissingTrainings = trainingNames.map((trainingName) => {
+            const training = result.find((t) => t.name === trainingName);
+
+            return {
+                training: trainingName,
+                amountOfWords: training ? training.wordsIds.length : 0,
+            };
+        });
+
+        return resultWithMissingTrainings;
+    }
 }
