@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SetWordsDto } from './dto/set-words.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Training } from './schemas/training.schema';
 import { Dictionary } from 'src/dictionary/schemas/dictionary.schema';
 import { TrainingName } from 'src/constants/TrainingName';
+import { AddWordsForTrainingsDto } from './dto/add-words-for-trainings.dto';
+import { SetWordsDto } from './dto/set-words.dto';
 
 @Injectable()
 export class TrainingService {
@@ -74,4 +75,43 @@ export class TrainingService {
 
         return resultWithMissingTrainings;
     }
+
+    async addWordsForTrainings(data: AddWordsForTrainingsDto, request) {
+        const userId = request.user.userId;
+        const { wordsIds, trainings } = data;
+
+        const existingTrainings = await this.TrainingModel.find({
+            user: userId,
+            name: { $in: trainings },
+        }).lean();
+
+        const existingTrainingNames = existingTrainings.map(training => training.name);
+
+        const newTrainingNames = trainings.filter(name => !existingTrainingNames.includes(name));
+
+        const updateResponse = await this.TrainingModel.updateMany(
+            { user: userId, name: { $in: existingTrainingNames } },
+            { $addToSet: { wordsIds: { $each: wordsIds.map(id => new mongoose.Types.ObjectId(id)) } } }
+        );
+
+        const newTrainings = newTrainingNames.map(name => ({
+            user: userId,
+            name,
+            wordsIds: wordsIds.map(id => new mongoose.Types.ObjectId(id)),
+        }));
+        const insertResponse = newTrainings.length
+            ? await this.TrainingModel.insertMany(newTrainings)
+            : [];
+
+        return {
+            message: "Words added to trainings successfully",
+            updatedCount: updateResponse.modifiedCount,
+            createdCount: insertResponse.length,
+            details: {
+                updated: updateResponse,
+                created: insertResponse,
+            },
+        };
+    }
+
 }

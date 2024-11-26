@@ -4,6 +4,7 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { SetWordsDto } from './dto/set-words.dto';
 import { TrainingName } from 'src/constants/TrainingName';
 import { ApiQuery } from '@nestjs/swagger';
+import { AddWordsForTrainingsDto } from './dto/add-words-for-trainings.dto';
 
 @Controller('training')
 export class TrainingController {
@@ -34,5 +35,14 @@ export class TrainingController {
     @Req() request: Request
   ) {
     return this.trainingService.getAmountWordsForTrainings(request);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post("add-words-for-trainings")
+  async addWordsForTrainings(
+    @Body() data: AddWordsForTrainingsDto,
+    @Req() request: Request
+  ) {
+    return this.trainingService.addWordsForTrainings(data, request);
   }
 }
