@@ -62,7 +62,7 @@ export class TrainingService {
     async getAmountWordsForTrainings(req) {
         const userId = req.user.userId;
         const trainingNames = Object.values(TrainingName);
-        const result = await this.TrainingModel.find({ user: userId });
+        const result = await this.TrainingModel.find({ user: new mongoose.Types.ObjectId(userId) });
 
         const resultWithMissingTrainings = trainingNames.map((trainingName) => {
             const training = result.find((t) => t.name === trainingName);
