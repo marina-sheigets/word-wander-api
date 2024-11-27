@@ -3,6 +3,7 @@ import { DictionaryService } from './dictionary.service';
 import { DictionaryController } from './dictionary.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Dictionary, DictionarySchema } from './schemas/dictionary.schema';
+import { Training, TrainingSchema } from 'src/training/schemas/training.schema';
 
 @Module({
   imports: [
@@ -10,6 +11,10 @@ import { Dictionary, DictionarySchema } from './schemas/dictionary.schema';
       {
         name: Dictionary.name,
         schema: DictionarySchema
+      },
+      {
+        name: Training.name,
+        schema: TrainingSchema
       }
     ])
   ],
