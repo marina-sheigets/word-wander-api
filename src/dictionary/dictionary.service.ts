@@ -19,7 +19,7 @@ export class DictionaryService {
     }
 
     public async getWords(request) {
-        return this.DictionaryModel.find({ user: request.user.userId });
+        return this.DictionaryModel.find({ user: request.user.userId }).sort({ createdAt: -1 });
     }
 
     public deleteWord(request) {
