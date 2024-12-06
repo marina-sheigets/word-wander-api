@@ -14,7 +14,7 @@ export class DictionaryService {
     ) { }
 
     public async addWord(request, { translation, word }: AddWordDto) {
-        const userId = request.user.userId;
+        const userId = new mongoose.Types.ObjectId(request.user.userId);
 
         const wordInDictionary = await this.DictionaryModel.findOne({ user: userId, word });
 
@@ -28,20 +28,23 @@ export class DictionaryService {
     }
 
     public async getWords(request) {
-        return this.DictionaryModel.find({ user: request.user.userId }).sort({ createdAt: -1 });
+        return this.DictionaryModel.find({ user: new mongoose.Types.ObjectId(request.user.userId) }).sort({ createdAt: -1 });
     }
 
     public deleteWord(request) {
         const { wordId } = request.query;
-        return this.DictionaryModel.deleteOne({ _id: wordId, user: request.user.userId });
+        return this.DictionaryModel.deleteOne({
+            _id: new mongoose.Types.ObjectId(wordId),
+            user: new mongoose.Types.ObjectId(request.user.userId)
+        });
     }
 
-    private async addWordToAllTrainings(userId: string, wordId: mongoose.Types.ObjectId) {
+    private async addWordToAllTrainings(userId: mongoose.Types.ObjectId, wordId: mongoose.Types.ObjectId) {
         const trainings = Object.values(TrainingName);
 
         for (const training of trainings) {
             await this.TrainingModel.updateOne(
-                { user: new mongoose.Types.ObjectId(userId), name: training },
+                { user: userId, name: training },
                 { $addToSet: { wordsIds: new mongoose.Types.ObjectId(wordId) } },
                 { upsert: true }
             );

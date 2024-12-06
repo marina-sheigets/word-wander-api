@@ -15,7 +15,7 @@ export class TrainingService {
     ) { }
 
     async setWords(data: SetWordsDto, request) {
-        const userId = request.user.userId;
+        const userId = new mongoose.Types.ObjectId(request.user.userId);
         const { trainingName, wordsIds } = data;
 
         const training = await this.TrainingModel.findOne({ name: trainingName, user: userId })
@@ -25,7 +25,7 @@ export class TrainingService {
 
         Logger.log(training);
 
-        const foundedWords = await this.DictionaryModel.find({ _id: { $in: wordsIds } });
+        const foundedWords = await this.DictionaryModel.find({ _id: { $in: wordsIds }, user: userId });
 
         if (!training) {
             const newTraining = new this.TrainingModel({
@@ -45,24 +45,34 @@ export class TrainingService {
             ])
         ].map(id => new mongoose.Types.ObjectId(id));
 
-        training.wordsIds = await this.DictionaryModel.find({ _id: { $in: uniqueWordIds } });
+        training.wordsIds = await this.DictionaryModel.find({ _id: { $in: uniqueWordIds }, user: userId });
         await training.save();
 
         return training;
     }
 
     async getWords(request, trainingName: TrainingName) {
-        const userId = request.user.userId;
+        const userId = new mongoose.Types.ObjectId(request.user.userId);
 
-        const training = await this.TrainingModel.find({ name: trainingName, user: userId });
+        const trainingData = await this.TrainingModel.findOne({ name: trainingName, user: userId });
 
-        return training;
+        const wordsIds = trainingData ? trainingData?.wordsIds : [];
+
+        const words = await this.DictionaryModel.find({ user: userId, _id: { $in: wordsIds } });
+
+        let dictionaryData = await this.DictionaryModel.find({ user: userId });
+
+        if (dictionaryData.length > 10) {
+            dictionaryData = dictionaryData.slice(0, 10);
+        }
+
+        return { words, dictionaryData };
     }
 
     async getAmountWordsForTrainings(req) {
-        const userId = req.user.userId;
+        const userId = new mongoose.Types.ObjectId(req.user.userId);
         const trainingNames = Object.values(TrainingName);
-        const result = await this.TrainingModel.find({ user: new mongoose.Types.ObjectId(userId) });
+        const result = await this.TrainingModel.find({ user: userId });
 
         const resultWithMissingTrainings = trainingNames.map((trainingName) => {
             const training = result.find((t) => t.name === trainingName);
@@ -80,6 +90,7 @@ export class TrainingService {
         const user = new mongoose.Types.ObjectId(request.user.userId);
         const { wordsIds, trainings } = data;
 
+        Logger.log(wordsIds);
         const wordObjectIds = wordsIds.map(id => new mongoose.Types.ObjectId(id));
 
         for (const trainingName of trainings) {
