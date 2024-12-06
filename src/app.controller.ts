@@ -5,5 +5,4 @@ import { AuthGuard } from './guards/auth.guard';
 @Controller()
 export class AppController {
   constructor() { }
-
 }
