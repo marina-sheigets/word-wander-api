@@ -8,4 +8,6 @@ dotenv.config({ path: resolve(__dirname, '../.env') })
 Sentry.init({
     dsn: process.env.SENTRY_DSN,
     integrations: [nodeProfilingIntegration()],
+    tracesSampleRate: 1.0,
+    profilesSampleRate: 1.0,
 });
