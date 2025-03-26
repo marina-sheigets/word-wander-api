@@ -16,12 +16,10 @@ export class DictionaryService {
     public async addWord(request, { translation, word }: AddWordDto) {
         const userId = new mongoose.Types.ObjectId(request.user.userId);
 
-        const wordInDictionary = await this.DictionaryModel.findOne({ user: userId, word });
-
-        await this.DictionaryModel.updateOne(
+        const wordInDictionary = await this.DictionaryModel.findOneAndUpdate(
             { user: userId, word },
             { $set: { translation } },
-            { upsert: true }
+            { upsert: true, new: true } // new: true returns the updated/created document
         );
 
         await this.addWordToAllTrainings(userId, wordInDictionary?._id as mongoose.Types.ObjectId);
@@ -33,6 +31,9 @@ export class DictionaryService {
 
     public deleteWord(request) {
         const { wordId } = request.query;
+
+        this.removeWordFromAllTrainings(new mongoose.Types.ObjectId(request.user.userId), new mongoose.Types.ObjectId(wordId as string));
+
         return this.DictionaryModel.deleteOne({
             _id: new mongoose.Types.ObjectId(wordId),
             user: new mongoose.Types.ObjectId(request.user.userId)
@@ -49,5 +50,20 @@ export class DictionaryService {
                 { upsert: true }
             );
         }
+    }
+
+    public deleteAllWords(request, wordsIds: string[]) {
+        for (const wordId of wordsIds) {
+            this.removeWordFromAllTrainings(new mongoose.Types.ObjectId(request.user.userId), new mongoose.Types.ObjectId(wordId));
+        }
+
+        return this.DictionaryModel.deleteMany({ _id: { $in: wordsIds } });
+    }
+
+    private async removeWordFromAllTrainings(userId: mongoose.Types.ObjectId, wordId: mongoose.Types.ObjectId) {
+        return this.TrainingModel.updateMany(
+            { user: new mongoose.Types.ObjectId(userId) },
+            { $pull: { wordsIds: new mongoose.Types.ObjectId(wordId) } }
+        );
     }
 }
