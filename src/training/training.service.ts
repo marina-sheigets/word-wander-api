@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Training } from './schemas/training.schema';
@@ -23,7 +23,6 @@ export class TrainingService {
             .where({ user: userId })
             .exec();
 
-        Logger.log(training);
 
         const foundedWords = await this.DictionaryModel.find({ _id: { $in: wordsIds }, user: userId });
 
@@ -90,7 +89,6 @@ export class TrainingService {
         const user = new mongoose.Types.ObjectId(request.user.userId);
         const { wordsIds, trainings } = data;
 
-        Logger.log(wordsIds);
         const wordObjectIds = wordsIds.map(id => new mongoose.Types.ObjectId(id));
 
         for (const trainingName of trainings) {
