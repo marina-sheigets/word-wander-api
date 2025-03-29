@@ -16,9 +16,12 @@ export class DictionaryService {
     public async addWord(request, { translation, word }: AddWordDto) {
         const userId = new mongoose.Types.ObjectId(request.user.userId);
 
+        const trimmedTranslation = translation.toLowerCase().trim();
+        const trimmedWord = word.toLowerCase().trim();
+
         const wordInDictionary = await this.DictionaryModel.findOneAndUpdate(
-            { user: userId, word },
-            { $set: { translation } },
+            { user: userId, word: trimmedWord },
+            { $set: { translation: trimmedTranslation } },
             { upsert: true, new: true } // new: true returns the updated/created document
         );
 
