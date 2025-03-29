@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { TrainingService } from './training.service';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { SetWordsDto } from './dto/set-words.dto';
 import { TrainingName } from 'src/constants/TrainingName';
 import { ApiQuery } from '@nestjs/swagger';
 import { AddWordsForTrainingsDto } from './dto/add-words-for-trainings.dto';
+import { DeleteWordsFromTrainingDto } from './dto/delete-words-from-trainings.dto';
 
 @Controller('training')
 export class TrainingController {
@@ -44,5 +45,14 @@ export class TrainingController {
     @Req() request: Request
   ) {
     return this.trainingService.addWordsForTrainings(data, request);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete("delete-words-from-training")
+  async deleteWordsFromTraining(
+    @Body() data: DeleteWordsFromTrainingDto,
+    @Req() request: Request
+  ) {
+    return this.trainingService.deleteWordsFromTraining(request, data);
   }
 }

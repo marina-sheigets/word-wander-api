@@ -6,6 +6,7 @@ import { Dictionary } from 'src/dictionary/schemas/dictionary.schema';
 import { TrainingName } from 'src/constants/TrainingName';
 import { AddWordsForTrainingsDto } from './dto/add-words-for-trainings.dto';
 import { SetWordsDto } from './dto/set-words.dto';
+import { DeleteWordsFromTrainingDto } from './dto/delete-words-from-trainings.dto';
 
 @Injectable()
 export class TrainingService {
@@ -100,4 +101,16 @@ export class TrainingService {
         }
     }
 
+
+    async deleteWordsFromTraining(request, data: DeleteWordsFromTrainingDto) {
+        const userId = new mongoose.Types.ObjectId(request.user.userId);
+        const { wordsIds, trainingName } = data;
+
+        const wordObjectIds = wordsIds.map(id => new mongoose.Types.ObjectId(id));
+
+        return this.TrainingModel.updateOne(
+            { user: userId, name: trainingName },
+            { $pull: { wordsIds: { $in: wordObjectIds } } }
+        );
+    }
 }
