@@ -7,12 +7,16 @@ import { TrainingName } from 'src/constants/TrainingName';
 import { AddWordsForTrainingsDto } from './dto/add-words-for-trainings.dto';
 import { SetWordsDto } from './dto/set-words.dto';
 import { DeleteWordsFromTrainingDto } from './dto/delete-words-from-trainings.dto';
+import { UpdateRatioDto } from './dto/update-ratio.dto';
+import { Statistics } from 'src/statistics/schemas/statistics.schema';
+import { StatisticsPath } from 'src/constants/StatisticsPaths';
 
 @Injectable()
 export class TrainingService {
     constructor(
         @InjectModel(Training.name) private TrainingModel: Model<Training>,
-        @InjectModel(Dictionary.name) private DictionaryModel: Model<Dictionary>
+        @InjectModel(Dictionary.name) private DictionaryModel: Model<Dictionary>,
+        @InjectModel(Statistics.name) private StatisticsModel: Model<Statistics>
     ) { }
 
     async setWords(data: SetWordsDto, request) {
@@ -114,20 +118,58 @@ export class TrainingService {
         );
     }
 
-    async updateAccuracy(req, accuracyRate: number) {
+    async updateAccuracy(req, data: UpdateRatioDto) {
         const user = new mongoose.Types.ObjectId(req.user.userId);
+        const { accuracyRate, trainingName } = data;
 
-        const training = await this.TrainingModel.findOne({ user });
+        const training = await this.TrainingModel.findOne({ user, name: trainingName });
+
+        if (!training) {
+            throw new Error("Training not found");
+        }
+
         const previousRate = training?.accuracyRate ?? 0;
         const attempts = training?.attempts ?? 0;
 
-        const newRate = ((previousRate * attempts) + accuracyRate) / ((attempts + 1));
+        const newRate = ((previousRate * attempts) + accuracyRate) / (attempts + 1);
 
-        return this.TrainingModel.findOneAndUpdate(
-            { user },
+        const updatedTraining = await this.TrainingModel.findOneAndUpdate(
+            { _id: training._id },
             {
                 $set: { accuracyRate: newRate },
                 $inc: { attempts: 1 }
+            },
+            { new: true }
+        );
+
+        await this.updateTrainingStatistics(user);
+
+        return updatedTraining;
+    }
+
+    async updateTrainingStatistics(user: mongoose.Types.ObjectId) {
+        const trainings = await this.TrainingModel.find({ user });
+
+        if (trainings.length === 0) return;
+
+
+        const validTrainings = trainings.filter(t => t.attempts > 0);
+
+        const mostEffectiveTraining = validTrainings.reduce((best, current) =>
+            (current.accuracyRate / current.attempts) > (best.accuracyRate / best.attempts) ? current : best
+        );
+
+        const leastSuccessfulTraining = validTrainings.reduce((worst, current) =>
+            (current.accuracyRate / current.attempts) < (worst.accuracyRate / worst.attempts) ? current : worst
+        );
+
+        await this.StatisticsModel.findOneAndUpdate(
+            { user },
+            {
+                $set: {
+                    [StatisticsPath.MOST_EFFECTIVE_TRAINING]: mostEffectiveTraining.name,
+                    [StatisticsPath.LEAST_SUCCESSFUL_TRAINING]: leastSuccessfulTraining.name
+                }
             },
             { new: true }
         );

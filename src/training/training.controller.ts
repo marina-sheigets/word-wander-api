@@ -63,6 +63,6 @@ export class TrainingController {
     @Body() data: UpdateRatioDto,
     @Req() request: Request
   ) {
-    return this.trainingService.updateAccuracy(request, data.accuracyRate);
+    return this.trainingService.updateAccuracy(request, data);
   }
 }
