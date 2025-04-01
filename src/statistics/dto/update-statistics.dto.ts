@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { StatisticsPath } from 'src/constants/StatisticsPaths';
 
 export class UpdateStatisticsDto {
@@ -9,5 +9,6 @@ export class UpdateStatisticsDto {
 
     @ApiProperty()
     @IsString()
+    @IsOptional()
     accuracyRate?: number;
 }

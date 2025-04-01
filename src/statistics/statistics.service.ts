@@ -33,15 +33,18 @@ export class StatisticsService {
             case StatisticsPath.TOTAL_INTERRUPTED_TRAININGS:
                 {
                     return this.StatisticsModel.findOneAndUpdate(
-                        { user_id: userId },
+                        { user: userId },
                         { $inc: { [fieldPath]: 1 } },
-                        { new: true }
+                        {
+                            new: true,
+                            upsert: true
+                        }
                     );
                 };
 
             case StatisticsPath.ACCURACY_RATE: {
                 const { accuracyRate } = updateData;
-                this.updateAccuracyRate(userId, accuracyRate);
+                return this.updateAccuracyRate(userId, accuracyRate);
             }
 
         }

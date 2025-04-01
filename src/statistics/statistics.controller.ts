@@ -16,7 +16,7 @@ export class StatisticsController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('update/:fieldPath')
+  @Post('')
   async updateField(
     @Req() request,
     @Body() updateDto: UpdateStatisticsDto
