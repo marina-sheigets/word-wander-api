@@ -20,7 +20,7 @@ export class StatisticsService {
 
     public async incrementField(request, updateData: UpdateStatisticsDto) {
         const userId = new mongoose.Types.ObjectId(request.user.userId);
-        const { fieldPath } = updateData;
+        const { fieldPath, count } = updateData;
 
         switch (fieldPath) {
             case StatisticsPath.ADDED_WORDS:
@@ -34,7 +34,7 @@ export class StatisticsService {
                 {
                     return this.StatisticsModel.findOneAndUpdate(
                         { user: userId },
-                        { $inc: { [fieldPath]: 1 } },
+                        { $inc: { [fieldPath]: count ?? 1 } },
                         {
                             new: true,
                             upsert: true
