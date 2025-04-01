@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { DictionaryModule } from './dictionary/dictionary.module';
 import { TrainingModule } from './training/training.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { TrainingModule } from './training/training.module';
     MongooseModule.forRoot(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.dsplv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`),
     AuthModule,
     DictionaryModule,
-    TrainingModule
+    TrainingModule,
+    StatisticsModule
   ],
   controllers: [AppController],
   providers: [AppService],
