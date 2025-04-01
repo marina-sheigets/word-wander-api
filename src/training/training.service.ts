@@ -171,7 +171,10 @@ export class TrainingService {
                     [StatisticsPath.LEAST_SUCCESSFUL_TRAINING]: leastSuccessfulTraining.name
                 }
             },
-            { new: true }
+            {
+                new: true,
+                upsert: true
+            },
         );
     }
 }
