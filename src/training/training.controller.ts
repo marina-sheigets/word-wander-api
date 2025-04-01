@@ -6,6 +6,7 @@ import { TrainingName } from 'src/constants/TrainingName';
 import { ApiQuery } from '@nestjs/swagger';
 import { AddWordsForTrainingsDto } from './dto/add-words-for-trainings.dto';
 import { DeleteWordsFromTrainingDto } from './dto/delete-words-from-trainings.dto';
+import { UpdateRatioDto } from './dto/update-ratio.dto';
 
 @Controller('training')
 export class TrainingController {
@@ -54,5 +55,14 @@ export class TrainingController {
     @Req() request: Request
   ) {
     return this.trainingService.deleteWordsFromTraining(request, data);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post("finish-training")
+  async updateRatio(
+    @Body() data: UpdateRatioDto,
+    @Req() request: Request
+  ) {
+    return this.trainingService.updateAccuracy(request, data.accuracyRate);
   }
 }

@@ -15,6 +15,12 @@ export class Training extends Document {
 
     @Prop({ required: true, type: mongoose.Types.ObjectId, ref: "User" })
     user: mongoose.Types.ObjectId;
+
+    @Prop({ required: true, default: 0 })
+    accuracyRate: number;
+
+    @Prop({ required: true, default: 0 })
+    attempts: number;
 }
 
 export const TrainingSchema = SchemaFactory.createForClass(Training);

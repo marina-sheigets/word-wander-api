@@ -113,4 +113,23 @@ export class TrainingService {
             { $pull: { wordsIds: { $in: wordObjectIds } } }
         );
     }
+
+    async updateAccuracy(req, accuracyRate: number) {
+        const user = new mongoose.Types.ObjectId(req.user.userId);
+
+        const training = await this.TrainingModel.findOne({ user });
+        const previousRate = training?.accuracyRate ?? 0;
+        const attempts = training?.attempts ?? 0;
+
+        const newRate = ((previousRate * attempts) + accuracyRate) / ((attempts + 1));
+
+        return this.TrainingModel.findOneAndUpdate(
+            { user },
+            {
+                $set: { accuracyRate: newRate },
+                $inc: { attempts: 1 }
+            },
+            { new: true }
+        );
+    }
 }
