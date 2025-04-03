@@ -21,4 +21,7 @@ export class TrainingsStatistics {
 
     @Prop({ required: true, default: 0 })
     trainings_completed: number;
+
+    @Prop({ required: true, default: 0 })
+    trainings_interrupted: number;
 }

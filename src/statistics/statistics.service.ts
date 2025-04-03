@@ -31,6 +31,7 @@ export class StatisticsService {
             case StatisticsPath.LEARNED_WORDS:
             case StatisticsPath.SKIPPED_WORDS:
             case StatisticsPath.TOTAL_INTERRUPTED_TRAININGS:
+            case StatisticsPath.TOTAL_COMPLETED_TRAININGS:
                 {
                     return this.StatisticsModel.findOneAndUpdate(
                         { user: userId },
