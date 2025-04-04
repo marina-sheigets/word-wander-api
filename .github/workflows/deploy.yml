@@ -1,0 +1,32 @@
+name: Deploy to ubuntu@16.171.144.24 remote machine
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to ubuntu@16.171.144.24
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          EC2_USER: ubuntu
+          EC2_HOST: 16.171.144.24
+          APP_DIR: /home/ubuntu/word-wander-api
+        run: |
+          echo "$SSH_PRIVATE_KEY" > deploy_key
+          chmod 600 deploy_key
+
+          ssh -o StrictHostKeyChecking=no -i deploy_key $EC2_USER@$EC2_HOST << 'EOF'
+            cd $APP_DIR
+            git pull origin master  
+            npm install --production
+            npm run build
+            pm2 restart word-wander-api || pm2 start dist/main.js --name word-wander-api
+          EOF
