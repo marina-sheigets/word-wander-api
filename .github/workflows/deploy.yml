@@ -27,5 +27,11 @@ jobs:
             git pull origin master
             npm install --production
             npm run build
-            pm2 restart word-wander-api || pm2 start dist/main.js --name word-wander-api
+
+            # Kill existing screen session if it exists
+            screen -X -S word-wander-api quit || true
+            
+            # Keep server running after ssh is terminated
+            screen -dmS word-wander-api bash -c 'cd ~/word-wander-api && npm run start:dev'
+
           EOF
