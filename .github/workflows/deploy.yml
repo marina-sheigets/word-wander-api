@@ -23,9 +23,9 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > deploy_key
           chmod 600 deploy_key
 
-          ssh -o StrictHostKeyChecking=no -i deploy_key $EC2_USER@$EC2_HOST << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i deploy_key $EC2_USER@$EC2_HOST << EOF
             cd $APP_DIR
-            git pull origin master  
+            git pull origin master
             npm install --production
             npm run build
             pm2 restart word-wander-api || pm2 start dist/main.js --name word-wander-api
