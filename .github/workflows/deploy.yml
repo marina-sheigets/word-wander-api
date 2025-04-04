@@ -18,7 +18,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           EC2_USER: ubuntu
           EC2_HOST: 16.171.144.24
-          APP_DIR: /home/ubuntu/word-wander-api
+          APP_DIR: /home/word-wander-api
         run: |
           echo "$SSH_PRIVATE_KEY" > deploy_key
           chmod 600 deploy_key
