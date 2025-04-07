@@ -7,11 +7,13 @@ import { ApiQuery } from '@nestjs/swagger';
 import { AddWordsForTrainingsDto } from './dto/add-words-for-trainings.dto';
 import { DeleteWordsFromTrainingDto } from './dto/delete-words-from-trainings.dto';
 import { UpdateRatioDto } from './dto/update-ratio.dto';
+import { CaptureErrors } from 'src/decorators/catchErrors.decorator';
 
 @Controller('training')
 export class TrainingController {
   constructor(private readonly trainingService: TrainingService) { }
 
+  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Post("set-words")
   async setWords(
@@ -21,6 +23,7 @@ export class TrainingController {
     return this.trainingService.setWords(data, request);
   }
 
+  @CaptureErrors()
   @ApiQuery({ name: 'trainingName', enum: TrainingName })
   @UseGuards(AuthGuard)
   @Get("get-words")
@@ -31,6 +34,7 @@ export class TrainingController {
     return this.trainingService.getWords(request, trainingName);
   }
 
+  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Get("get-amount-words-for-trainings")
   async getAmountWordsForTrainings(
@@ -39,6 +43,7 @@ export class TrainingController {
     return this.trainingService.getAmountWordsForTrainings(request);
   }
 
+  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Post("add-words-for-trainings")
   async addWordsForTrainings(
@@ -48,6 +53,7 @@ export class TrainingController {
     return this.trainingService.addWordsForTrainings(data, request);
   }
 
+  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Delete("delete-words-from-training")
   async deleteWordsFromTraining(
@@ -57,6 +63,7 @@ export class TrainingController {
     return this.trainingService.deleteWordsFromTraining(request, data);
   }
 
+  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Post("finish-training")
   async updateRatio(

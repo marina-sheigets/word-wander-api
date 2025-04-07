@@ -7,6 +7,7 @@ import { ChangePasswordDto } from "./dto/change-password.dto";
 import { AuthGuard } from "src/guards/auth.guard";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResetPasswordData } from "./dto/reset-password.dto";
+import { CaptureErrors } from "src/decorators/catchErrors.decorator";
 
 @Controller('auth')
 export class AuthController {
@@ -14,6 +15,7 @@ export class AuthController {
         private authService: AuthService
     ) { }
 
+    @CaptureErrors()
     @Post('signup')
     async singUp(
         @Body() signupData: SignUpDto
@@ -21,6 +23,7 @@ export class AuthController {
         return this.authService.signUp(signupData);
     }
 
+    @CaptureErrors()
     @Post('login')
     async login(
         @Body() loginData: LoginDto
@@ -28,11 +31,13 @@ export class AuthController {
         return this.authService.login(loginData);
     }
 
+    @CaptureErrors()
     @Post('refresh')
     async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
         return this.authService.refreshToken(refreshTokenDto);
     }
 
+    @CaptureErrors()
     @UseGuards(AuthGuard)
     @Put('change-password')
     async changePassword(
@@ -42,6 +47,7 @@ export class AuthController {
         return await this.authService.changePassword(request, changePasswordData);
     }
 
+    @CaptureErrors()
     @Post('forgot-password')
     async forgotPassword(
         @Body() forgotPasswordData: ForgotPasswordDto
@@ -49,6 +55,7 @@ export class AuthController {
         return this.authService.forgotPassword(forgotPasswordData);
     }
 
+    @CaptureErrors()
     @Put('reset-password')
     async resetPassword(
         @Body() resetPasswordData: ResetPasswordData
@@ -56,12 +63,14 @@ export class AuthController {
         return this.authService.resetPassword(resetPasswordData);
     }
 
+    @CaptureErrors()
     @UseGuards(AuthGuard)
     @Post('logout')
     async logout(@Req() request) {
         return this.authService.logout(request);
     }
 
+    @CaptureErrors()
     @UseGuards(AuthGuard)
     @Delete('delete-account')
     async deleteAccount(@Req() request) {
