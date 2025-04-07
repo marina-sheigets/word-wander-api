@@ -62,7 +62,7 @@ export class StatisticsService {
         const newAccuracyRate = ((previousAccuracyRate * previousTrainings) + (accuracyRate * 100)) / newTrainings;
 
         return this.StatisticsModel.findOneAndUpdate(
-            { user_id: userId },
+            { user: userId },
             {
                 $set: { [StatisticsPath.ACCURACY_RATE]: newAccuracyRate },
                 // $inc: { "trainings.trainings_completed": 1 }
