@@ -10,6 +10,7 @@ import { DictionaryModule } from './dictionary/dictionary.module';
 import { TrainingModule } from './training/training.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { CollectionModule } from './collection/collection.module';
+import { DictionaryCollectionModule } from './dictionary-collection/dictionary-collection.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { CollectionModule } from './collection/collection.module';
     DictionaryModule,
     TrainingModule,
     StatisticsModule,
-    CollectionModule
+    CollectionModule,
+    DictionaryCollectionModule
   ],
   controllers: [AppController],
   providers: [AppService],
