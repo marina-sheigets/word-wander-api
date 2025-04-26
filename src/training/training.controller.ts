@@ -13,9 +13,9 @@ import { CaptureErrors } from 'src/decorators/catchErrors.decorator';
 export class TrainingController {
   constructor(private readonly trainingService: TrainingService) { }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Post("set-words")
+  @CaptureErrors()
   async setWords(
     @Body() data: SetWordsDto,
     @Req() request: Request
@@ -23,10 +23,10 @@ export class TrainingController {
     return this.trainingService.setWords(data, request);
   }
 
-  @CaptureErrors()
   @ApiQuery({ name: 'trainingName', enum: TrainingName })
   @UseGuards(AuthGuard)
   @Get("get-words")
+  @CaptureErrors()
   async getWords(
     @Query("trainingName") trainingName: TrainingName,
     @Req() request: Request
@@ -34,18 +34,18 @@ export class TrainingController {
     return this.trainingService.getWords(request, trainingName);
   }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Get("get-amount-words-for-trainings")
+  @CaptureErrors()
   async getAmountWordsForTrainings(
     @Req() request: Request
   ) {
     return this.trainingService.getAmountWordsForTrainings(request);
   }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Post("add-words-for-trainings")
+  @CaptureErrors()
   async addWordsForTrainings(
     @Body() data: AddWordsForTrainingsDto,
     @Req() request: Request
@@ -53,9 +53,9 @@ export class TrainingController {
     return this.trainingService.addWordsForTrainings(data, request);
   }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Delete("delete-words-from-training")
+  @CaptureErrors()
   async deleteWordsFromTraining(
     @Body() data: DeleteWordsFromTrainingDto,
     @Req() request: Request
@@ -63,9 +63,9 @@ export class TrainingController {
     return this.trainingService.deleteWordsFromTraining(request, data);
   }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Post("finish-training")
+  @CaptureErrors()
   async updateRatio(
     @Body() data: UpdateRatioDto,
     @Req() request: Request

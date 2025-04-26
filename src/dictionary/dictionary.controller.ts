@@ -9,9 +9,9 @@ import { CaptureErrors } from 'src/decorators/catchErrors.decorator';
 export class DictionaryController {
   constructor(private readonly dictionaryService: DictionaryService) { }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Post('add-word')
+  @CaptureErrors()
   async addWord(
     @Body() addWordData: AddWordDto,
     @Req() request
@@ -19,25 +19,25 @@ export class DictionaryController {
     return this.dictionaryService.addWord(request, addWordData);
   }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Get('get-words')
+  @CaptureErrors()
   async getWords(@Req() request) {
     return this.dictionaryService.getWords(request);
   }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Delete('delete-word')
+  @CaptureErrors()
   async deleteWord(
     @Req() request
   ) {
     return this.dictionaryService.deleteWord(request);
   }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Delete('delete-words')
+  @CaptureErrors()
   async deleteAllWords(
     @Req() request,
     @Body() removeWordsData: RemovesWordsDto

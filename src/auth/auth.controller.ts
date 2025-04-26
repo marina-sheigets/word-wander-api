@@ -15,31 +15,31 @@ export class AuthController {
         private authService: AuthService
     ) { }
 
-    @CaptureErrors()
     @Post('signup')
+    @CaptureErrors()
     async singUp(
         @Body() signupData: SignUpDto
     ) {
         return this.authService.signUp(signupData);
     }
 
-    @CaptureErrors()
     @Post('login')
+    @CaptureErrors()
     async login(
         @Body() loginData: LoginDto
     ) {
         return this.authService.login(loginData);
     }
 
-    @CaptureErrors()
     @Post('refresh')
+    @CaptureErrors()
     async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
         return this.authService.refreshToken(refreshTokenDto);
     }
 
-    @CaptureErrors()
     @UseGuards(AuthGuard)
     @Put('change-password')
+    @CaptureErrors()
     async changePassword(
         @Body() changePasswordData: ChangePasswordDto,
         @Req() request
@@ -47,32 +47,32 @@ export class AuthController {
         return await this.authService.changePassword(request, changePasswordData);
     }
 
-    @CaptureErrors()
     @Post('forgot-password')
+    @CaptureErrors()
     async forgotPassword(
         @Body() forgotPasswordData: ForgotPasswordDto
     ) {
         return this.authService.forgotPassword(forgotPasswordData);
     }
 
-    @CaptureErrors()
     @Put('reset-password')
+    @CaptureErrors()
     async resetPassword(
         @Body() resetPasswordData: ResetPasswordData
     ) {
         return this.authService.resetPassword(resetPasswordData);
     }
 
-    @CaptureErrors()
     @UseGuards(AuthGuard)
     @Post('logout')
+    @CaptureErrors()
     async logout(@Req() request) {
         return this.authService.logout(request);
     }
 
-    @CaptureErrors()
     @UseGuards(AuthGuard)
     @Delete('delete-account')
+    @CaptureErrors()
     async deleteAccount(@Req() request) {
         return this.authService.deleteAccount(request);
     }

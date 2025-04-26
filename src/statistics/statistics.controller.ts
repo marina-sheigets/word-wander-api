@@ -8,18 +8,18 @@ import { CaptureErrors } from 'src/decorators/catchErrors.decorator';
 export class StatisticsController {
   constructor(private readonly statisticsService: StatisticsService) { }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Get('')
+  @CaptureErrors()
   async getStatistics(
     @Req() request
   ) {
     return this.statisticsService.getStatistics(request);
   }
 
-  @CaptureErrors()
   @UseGuards(AuthGuard)
   @Post('')
+  @CaptureErrors()
   async updateField(
     @Req() request,
     @Body() updateDto: UpdateStatisticsDto
