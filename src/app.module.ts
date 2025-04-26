@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { DictionaryModule } from './dictionary/dictionary.module';
 import { TrainingModule } from './training/training.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { CollectionModule } from './collection/collection.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { StatisticsModule } from './statistics/statistics.module';
     AuthModule,
     DictionaryModule,
     TrainingModule,
-    StatisticsModule
+    StatisticsModule,
+    CollectionModule
   ],
   controllers: [AppController],
   providers: [AppService],
