@@ -26,6 +26,7 @@ export class DictionaryService {
         );
 
         await this.addWordToAllTrainings(userId, wordInDictionary?._id as mongoose.Types.ObjectId);
+        return wordInDictionary;
     }
 
     public async getWords(request) {
