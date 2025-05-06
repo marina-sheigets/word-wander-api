@@ -1,14 +1,17 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { AddCollectionDto } from "./dto/add-collection.dto";
 import mongoose, { Model } from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
 import { Collection } from "./schemas/collection.schema";
+import { AddWordToCollectionsDto } from "./dto/addWordToCollections.dto";
+import { DictionaryCollection } from "src/dictionary-collection/schemas/dictionary-collection.schema";
 
 @Injectable()
 export class CollectionService {
 
     constructor(
         @InjectModel(Collection.name) private CollectionModel: Model<Collection>,
+        @InjectModel(DictionaryCollection.name) private DictionaryCollectionModel: Model<DictionaryCollection>,
     ) { }
 
     async getCollections(request) {
@@ -31,5 +34,42 @@ export class CollectionService {
         });
 
         return await newCollection.save();
+    }
+
+    async addWordToCollections(req, addWordsToCollectionData: AddWordToCollectionsDto) {
+        try {
+            const userId = new mongoose.Types.ObjectId(req.user.userId);
+            const { collections, wordId } = addWordsToCollectionData;
+
+            const newCollections = collections.filter(c => !c.id);
+            const existingCollections = collections.filter((c) => c.id);
+
+            const createdCollectionsIds = [];
+
+            for (const collection of newCollections) {
+                const result = await this.addCollection(req, { name: collection.name });
+                createdCollectionsIds.push(result);
+            }
+
+            const allCollectionsIds = [
+                ...existingCollections.map(c => c.id),
+                ...createdCollectionsIds
+            ];
+
+            const createOperations = allCollectionsIds.map(collectionId => (
+                this.DictionaryCollectionModel.create({
+                    user_id: userId,
+                    collection_id: new mongoose.Types.ObjectId(collectionId),
+                    dictionary_id: new mongoose.Types.ObjectId(wordId)
+                })
+            ));
+
+            await Promise.all(createOperations);
+
+            return;
+        } catch (e) {
+            Logger.log(e);
+            throw (e);
+        }
     }
 }

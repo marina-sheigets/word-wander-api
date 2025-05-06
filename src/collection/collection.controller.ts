@@ -3,6 +3,7 @@ import { CaptureErrors } from "src/decorators/catchErrors.decorator";
 import { AuthGuard } from "src/guards/auth.guard";
 import { AddCollectionDto } from "./dto/add-collection.dto";
 import { CollectionService } from "./collection.service";
+import { AddWordToCollectionsDto } from "./dto/addWordToCollections.dto";
 
 
 @Controller('collection')
@@ -28,5 +29,15 @@ export class CollectionController {
         @Req() request
     ) {
         return this.collectionService.addCollection(request, addCollectionData);
+    }
+
+    @UseGuards(AuthGuard)
+    @Post('add-word')
+    @CaptureErrors()
+    async addWordToCollections(
+        @Body() addWordsToCollectionData: AddWordToCollectionsDto,
+        @Req() request
+    ) {
+        return this.collectionService.addWordToCollections(request, addWordsToCollectionData);
     }
 }
