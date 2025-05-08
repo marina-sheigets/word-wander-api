@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Dictionary } from './schemas/dictionary.schema';
 import mongoose, { Model } from 'mongoose';
@@ -7,6 +7,7 @@ import { TrainingName } from 'src/constants/TrainingName';
 import { Training } from 'src/training/schemas/training.schema';
 import { DictionaryCollection } from 'src/dictionary-collection/schemas/dictionary-collection.schema';
 import { Collection } from 'src/collection/schemas/collection.schema';
+import { EditWordDto } from './dto/edit-word.dto';
 
 @Injectable()
 export class DictionaryService {
@@ -126,5 +127,27 @@ export class DictionaryService {
             { user: new mongoose.Types.ObjectId(userId) },
             { $pull: { wordsIds: new mongoose.Types.ObjectId(wordId) } }
         );
+    }
+
+    public async editWord(request, editWordData: EditWordDto) {
+        try {
+            const userId = new mongoose.Types.ObjectId(request.user.userId);
+
+            const dictionaryObject = await this.DictionaryModel.findOne({
+                _id: new mongoose.Types.ObjectId(editWordData.id),
+                user: userId
+            });
+            if (!dictionaryObject) {
+                throw new BadRequestException("Something went wrong");
+            }
+
+            dictionaryObject.word = editWordData.word;
+            dictionaryObject.translation = editWordData.translation;
+
+            return await dictionaryObject.save()
+        } catch (e) {
+            Logger.error(e);
+            throw (e);
+        }
     }
 }

@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { DictionaryService } from './dictionary.service';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { AddWordDto } from './dto/add-word.dto';
 import { RemovesWordsDto } from './dto/remove-words.dto';
 import { CaptureErrors } from 'src/decorators/catchErrors.decorator';
+import { EditWordDto } from './dto/edit-word.dto';
 
 @Controller('dictionary')
 export class DictionaryController {
@@ -43,5 +44,17 @@ export class DictionaryController {
     @Body() removeWordsData: RemovesWordsDto
   ) {
     return this.dictionaryService.deleteAllWords(request, removeWordsData.wordsIds);
+  }
+
+
+  @UseGuards(AuthGuard)
+  @Put('edit')
+  @CaptureErrors()
+  async editWord(
+    @Req() request,
+    @Body() editWordData: EditWordDto
+
+  ) {
+    return this.dictionaryService.editWord(request, editWordData);
   }
 }
