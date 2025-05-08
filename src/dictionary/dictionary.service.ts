@@ -1,16 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Dictionary } from './schemas/dictionary.schema';
 import mongoose, { Model } from 'mongoose';
 import { AddWordDto } from './dto/add-word.dto';
 import { TrainingName } from 'src/constants/TrainingName';
 import { Training } from 'src/training/schemas/training.schema';
+import { DictionaryCollection } from 'src/dictionary-collection/schemas/dictionary-collection.schema';
+import { Collection } from 'src/collection/schemas/collection.schema';
 
 @Injectable()
 export class DictionaryService {
     constructor(
         @InjectModel(Dictionary.name) private DictionaryModel: Model<Dictionary>,
-        @InjectModel(Training.name) private TrainingModel: Model<Training>
+        @InjectModel(Training.name) private TrainingModel: Model<Training>,
+        @InjectModel(DictionaryCollection.name) private DictionaryCollectionModel: Model<DictionaryCollection>,
+        @InjectModel(Collection.name) private CollectionModel: Model<Collection>
     ) { }
 
     public async addWord(request, { translation, word }: AddWordDto) {
@@ -30,7 +34,60 @@ export class DictionaryService {
     }
 
     public async getWords(request) {
-        return this.DictionaryModel.find({ user: new mongoose.Types.ObjectId(request.user.userId) }).sort({ createdAt: -1 });
+        try {
+            const user = new mongoose.Types.ObjectId(request.user.userId);
+
+            const dictionaryEntries = await this.DictionaryModel.find({
+                user: user
+            }).sort({ createdAt: -1 });
+
+            const dictionaryIds = dictionaryEntries.map(entry => entry._id);
+            const dictionaryCollections = await this.DictionaryCollectionModel.find({
+                dictionary_id: { $in: dictionaryIds },
+                user_id: user
+            });
+
+            const dictionaryToCollectionsMap = {};
+
+            dictionaryCollections.forEach(dc => {
+                if (!dictionaryToCollectionsMap[dc.dictionary_id.toString()]) {
+                    dictionaryToCollectionsMap[dc.dictionary_id.toString()] = [];
+                }
+                dictionaryToCollectionsMap[dc.dictionary_id.toString()].push(dc.collection_id);
+            });
+
+            const collectionIds = dictionaryCollections.map(dc => dc.collection_id);
+
+            const collections = await this.CollectionModel.find({
+                _id: { $in: collectionIds }
+            });
+
+            const collectionMap = {};
+            collections.forEach(collection => {
+                collectionMap[collection._id.toString()] = collection;
+            });
+
+            const enrichedDictionaryEntries = dictionaryEntries.map(entry => {
+                const plainEntry = entry.toObject ? entry.toObject() : JSON.parse(JSON.stringify(entry));
+
+                plainEntry.collections = [];
+
+                const collectionIds = dictionaryToCollectionsMap[entry._id.toString()] || [];
+
+                collectionIds.forEach(collectionId => {
+                    if (collectionMap[collectionId.toString()]) {
+                        plainEntry.collections.push(collectionMap[collectionId.toString()]);
+                    }
+                });
+
+                return plainEntry;
+            });
+
+            return enrichedDictionaryEntries;
+        } catch (e) {
+            Logger.error(e);
+            throw (e);
+        }
     }
 
     public deleteWord(request) {
