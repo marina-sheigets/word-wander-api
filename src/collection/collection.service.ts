@@ -5,6 +5,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Collection } from "./schemas/collection.schema";
 import { AddWordToCollectionsDto } from "./dto/addWordToCollections.dto";
 import { DictionaryCollection } from "src/dictionary-collection/schemas/dictionary-collection.schema";
+import { EditCollectionDto } from "./dto/edit-collection.dto";
 
 @Injectable()
 export class CollectionService {
@@ -71,5 +72,20 @@ export class CollectionService {
             Logger.log(e);
             throw (e);
         }
+    }
+
+    async editCollectionName(req, editCollectionDto: EditCollectionDto) {
+        const userId = new mongoose.Types.ObjectId(req.user.userId);
+        const collectionId = new mongoose.Types.ObjectId(editCollectionDto.collectionId);
+
+        const foundedCollection = await this.CollectionModel.findOne({ user: userId, _id: collectionId });
+
+        if (!foundedCollection) {
+            throw new BadRequestException();
+        }
+
+        foundedCollection.name = editCollectionDto.name;
+
+        return await foundedCollection.save();
     }
 }
